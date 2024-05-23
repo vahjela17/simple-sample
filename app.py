@@ -21,7 +21,9 @@ CORS(app)
 # Database connection
 db_path = 'sqlite:///products.db'
 engine = create_engine(db_path, echo=True)
-pricing_excel_path = "C:/Users/mikev/Downloads/Wine_Pricing.xlsx"
+pricing_excel_path = os.path.join(app.root_path, "Wine_Pricing.xlsx")
+if not os.path.exists(pricing_excel_path):
+     return jsonify({"error": "Template file not found"}), 404
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -97,35 +99,7 @@ def insert_values_from_data(driver, pricing_dict, product_ids):
             logging.error(f"Timeout while interacting with input field for product ID: {product_id}")
         except Exception as e:
             logging.error(f"Error interacting with input field for product ID: {product_id} - {e}")
-'''
-def open_modal_and_insert_values(driver, unit_price):
-    """Open the modal popup and insert values."""
-    try:
-        wait = WebDriverWait(driver, 10)
-        modal = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "modal-content")))
 
-        # Insert "Your Price" into the label input field
-        input_label = WebDriverWait(modal, 10).until(EC.presence_of_element_located((By.ID, "list_entry_list_entry_prices_attributes_0_label_display")))
-        input_label.clear()
-        input_label.send_keys("Your Price")
-
-        # Insert the unit price into the price input field
-        input_price = WebDriverWait(modal, 10).until(EC.presence_of_element_located((By.ID, "list_entry_list_entry_prices_attributes_0_price_per_unit")))
-        input_price.clear()
-        input_price.send_keys(unit_price)
-        input_price.send_keys(Keys.RETURN)
-        time.sleep(1)  # Adjust timing based on page behavior
-
-        # Close the modal
-        close_button = modal.find_element(By.XPATH, "//button[@data-dismiss='modal']")
-        close_button.click()
-        time.sleep(1)  # Adjust timing based on page behavior
-
-    except TimeoutException:
-        logging.error("Timeout while waiting for modal to appear or interact with modal elements.")
-    except Exception as e:
-        logging.error(f"Error interacting with modal: {e}")
-'''
 def generate_PDF(driver):
     wait = WebDriverWait(driver, 10)
     generate_pdf_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id='content']/div/div[1]/div[3]/div/div[2]/div[1]/div[1]/a[3]")))
