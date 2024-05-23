@@ -148,7 +148,9 @@ def generate_form():
     selectedProducts = data.get('selectedProducts')
 
     # Load the spreadsheet using openpyxl
-    file_path = 'sample_form.xlsx'
+    file_path = os.path.join(app.root_path, 'sample_form.xlsx')
+    if not os.path.exists(file_path):
+        return jsonify({"error": "Template file not found"}), 404
     wb = load_workbook(file_path)
     ws = wb.active
 
@@ -179,16 +181,25 @@ def generate_form():
     output_file = os.path.join(output_dir, f"{today}-sample-request.xlsx")
     wb.save(output_file)
 
-    # Return the link to download the file
+        # Return the link to download the file
     return jsonify({"excel_link": f"/download/{today}-sample-request.xlsx"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/download/<filename>', methods=['GET'])
 def download_file(filename):
-    file_path = os.path.join(app.root_path, 'generated_files', filename)
-    if os.path.exists(file_path):
-        return send_file(file_path, as_attachment=True)
-    else:
-        return jsonify({"error": "File not found"}), 404
+    try:
+        file_path = os.path.join(app.root_path, 'generated_files', filename)
+        if os.path.exists(file_path):
+            return send_file(file_path, as_attachment=True)
+        else:
+            return jsonify({"error": "File not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/')
+def index():
+    return send_file(os.path.join(app.root_path, 'static', 'index.html'))
     
 @app.route('/search', methods=['GET'])
 def search():
